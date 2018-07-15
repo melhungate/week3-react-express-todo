@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import ShowTodos from "./components/ShowTodos";
 import AddTodo from "./components/AddTodo";
+import axios from "axios";
 
 class TodoApp extends Component {
   constructor() {
@@ -11,21 +12,37 @@ class TodoApp extends Component {
     };
   }
 
+  componentDidMount() {
+    this.refresh();
+  }
+
   clearInput = () => {
     this.setState({ todo: "" });
   };
 
+  refresh = () => {
+    axios.get("/todos").then(res => {
+      this.setState({ todos: res.data.todos });
+    })
+    .catch((err) => {
+      this.setState({ todos: [err.message] })
+    });
+  };
+
   addTodo = () => {
-    const nextTodos = Array.from(this.state.todos);
-    nextTodos.push(this.state.todo);
-    this.setState({ todos: nextTodos });
+    axios
+      .post(`/todos/${this.state.todo}`)
+      .then(this.refresh)
     this.clearInput();
   };
 
   removeTodo = index => {
-    const nextTodos = Array.from(this.state.todos);
-    nextTodos.splice(index, 1);
-    this.setState({ todos: nextTodos });
+    axios
+      .delete(`/todos/${index}`)
+      .then(this.refresh)
+    // const nextTodos = Array.from(this.state.todos);
+    // nextTodos.splice(index, 1);
+    // this.setState({ todos: nextTodos });
   };
 
   handleChange = e => {
